@@ -28,7 +28,7 @@ function runPaginatedQuery(queryText, param, fetchSize, pageState = null) {
     return cassdb.executePaginatedQuery(queryText, param, fetchSize, pageState);
 }
 
-/*function to follow a particular function 
+/*function to follow a particular function
 eg. A wants to follow B
 followsourceid : A's UUID
 followtargetid : B's UUID
@@ -48,7 +48,7 @@ async function follow(request) {
 
 }
 
-/*function to follow a particular function 
+/*function to follow a particular function
 eg. A wants to  ow B
 followsourceid : A's UUID
 followtargetid : B's UUID
@@ -68,7 +68,7 @@ async function unfollow(request) {
 
 //function to get all the following of a user
 async function following(request) {
-    try { 
+    try {
         let following_query = ""
         let params = []
         let followData = {}
@@ -109,7 +109,7 @@ async function following(request) {
                     value.push(element['targetid'].toString())
                     followData["content"] = value
                 }
-                
+
             });
             //console.log("followData :",followData)
             let list1= {}
@@ -148,7 +148,7 @@ async function following(request) {
             //     following_ids_list = following_ids_list.concat(list3)
             // }
             //following_ids_list = list1.concat(list2,list3)
-            
+
         }
         return following_ids_list
         // else {
@@ -170,7 +170,7 @@ async function following(request) {
 }
 
 async function followingv2(request) {
-    try { 
+    try {
         let following_query = ""
         let count_query = ""
         let params = []
@@ -235,7 +235,7 @@ async function followingv2(request) {
                     value.push(element['targetid'].toString())
                     followData["content"] = value
                 }
-                
+
             });
             //console.log("followData :",followData)
             let list1= {}
@@ -244,7 +244,7 @@ async function followingv2(request) {
             if("person" in followData){
                 list1 =await getPersonData(request.rootOrg,request.org,followData["person"])
                 list1.count = countDict["person"]
-                delete countDict['person'] 
+                delete countDict['person']
                 //console.log(list1)
                 if(Object.keys(list1).length>0){
                     following_ids_list.push(list1)
@@ -268,7 +268,7 @@ async function followingv2(request) {
                 }
                 //console.log("following_ids_list  :",following_ids_list)
             }
-            if(result.pageState != null){ 
+            if(result.pageState != null){
                 following_ids_list.push({
                     'pageState': result.pageState
                 })
@@ -285,7 +285,7 @@ async function followingv2(request) {
             //     following_ids_list = following_ids_list.concat(list3)
             // }
             //following_ids_list = list1.concat(list2,list3)
-            
+
         }
         return following_ids_list
         // else {
@@ -374,7 +374,7 @@ async function followingv3(request, isInIntranet, isStandAlone) {
                         value.push(element['targetid'].toString())
                         followData["content"] = value
                     }
-                    
+
                 });
                 personData = []
                 tagsData = []
@@ -390,7 +390,7 @@ async function followingv3(request, isInIntranet, isStandAlone) {
                             following_ids['person'].count = countDict["person"]
                         }
                         if(following_ids['person'].hasOwnProperty('data') == false){
-                            following_ids['person']['data'] = personData    
+                            following_ids['person']['data'] = personData
                         }else{
                             following_ids['person']['data'] += personData
                         }
@@ -408,14 +408,14 @@ async function followingv3(request, isInIntranet, isStandAlone) {
                             following_ids['tags'].count = countDict["tags"]
                         }
                         if(following_ids['tags'].hasOwnProperty('data') == false){
-                            following_ids['tags']['data'] = tagsData    
+                            following_ids['tags']['data'] = tagsData
                         }else{
                             following_ids['tags']['data'] += tagsData
                         }
                     }
                 }
                 if("content" in followData){
-                    contentData = await getData(request.rootOrg,request.org,followData["content"], 
+                    contentData = await getData(request.rootOrg,request.org,followData["content"],
                                                 isInIntranet, isStandAlone)
                     //console.log("list3 : ",list3)
                     if(Object.keys(contentData).length>0){
@@ -429,12 +429,12 @@ async function followingv3(request, isInIntranet, isStandAlone) {
                         }
                     }
                 }
-                if(result.pageState != null){ 
+                if(result.pageState != null){
                     following_ids['pageState'] = result.pageState
                 }
                 pageState = result.pageState
             }
-        }while(request.hasOwnProperty('type')==true && request.type.length == 1 
+        }while(request.hasOwnProperty('type')==true && request.type.length == 1
                 && request.hasOwnProperty('fetchSize') && following_ids.hasOwnProperty(request.type[0])
                 && request.fetchSize > following_ids[request.type[0]]['data'].length)
         return following_ids
@@ -465,7 +465,7 @@ async function followingv3(request, isInIntranet, isStandAlone) {
 //                     "type":"person"
 //                 }
 //                 userList.push(userobj)
-//                 //userList[element['id'].toString()] = element['firstname'].toString() + ' ' + element['lastname'].toString()              
+//                 //userList[element['id'].toString()] = element['firstname'].toString() + ' ' + element['lastname'].toString()
 //               });
 //             //return mapped_result.rows
 //         }
@@ -513,8 +513,8 @@ async function getPersonData(rootOrg,org,ids){
                         }
                         userList.push(userobj)
                         ids.splice(ids.indexOf(user_id), 1)
-                        //userList[element['id'].toString()] = element['firstname'].toString() + ' ' + element['lastname'].toString()              
-                    });    
+                        //userList[element['id'].toString()] = element['firstname'].toString() + ' ' + element['lastname'].toString()
+                    });
                     //return mapped_result.rows
                 }
                 else {
@@ -542,20 +542,20 @@ async function getPersonData(rootOrg,org,ids){
                 const usermeta_port = process.env.usermeta_port || properties.get('usermeta_port')
                 let userMetaUrl = "http://"+usermeta_ip+":"+usermeta_port+"/user/multi-fetch/wid"
                 // console.log(ids)
-                var options = { 
+                var options = {
                     method: 'POST',
                     url: userMetaUrl,
-                    headers: 
-                    { 
-                        'Content-Type': 'application/json' 
+                    headers:
+                    {
+                        'Content-Type': 'application/json'
                     },
-                    body: 
-                    { 
+                    body:
+                    {
                         source_fields: [ 'wid', 'first_name', 'last_name' ],
                         conditions: { root_org: rootOrg },
                         values: ids
                     },
-                    json: true 
+                    json: true
                 };
 
                 return new Promise((resolve,reject)=>{
@@ -567,7 +567,7 @@ async function getPersonData(rootOrg,org,ids){
                                 let user_id = element["wid"]
                                 let first_name = element['first_name']!=null ? element['first_name'].toString() : ""
                                 let last_name = element['last_name']!=null ? element['last_name'].toString() : ""
-                        
+
                                 userobj ={
                                     "identifier" :user_id,
                                     "name" : (first_name + ' ' + last_name).toString().trim()
@@ -596,7 +596,7 @@ async function getPersonData(rootOrg,org,ids){
                         resolve(resultObj)
                         //console.log(body);
                     });
-                })  
+                })
             }
         }
     } catch (error) {
@@ -618,7 +618,7 @@ async function getTagsData(rootOrg,org,ids){
         let resultObj = {}
         let query = {
             "size":ids.length,
-            "_source": ["id","name"], 
+            "_source": ["id","name"],
             "query": {
               "bool": {
                 "must": [
@@ -667,8 +667,8 @@ async function getData(rootOrg,org,ids,isInIntranet=null, isStandAlone=null){
         let esIndex = "contentSearchIndex"
         let query = {
             "size":ids.length,
-            "_source": ["identifier", "name", "contentType", "appIcon", "artifactUrl", "complexityLevel", "description", "duration", "learningMode", "mimeType", "resourceType", "status", "expiryData", "dimension", "category", "categoryType", "viewCount", "averageRating", "isInIntranet", "isStandAlone"], 
-            "query": {  
+            "_source": ["identifier", "name", "contentType", "appIcon", "artifactUrl", "complexityLevel", "description", "duration", "learningMode", "mimeType", "resourceType", "status", "expiryData", "dimension", "category", "categoryType", "viewCount", "averageRating", "isInIntranet", "isStandAlone"],
+            "query": {
               "bool": {
                 "must": [
                   {
@@ -728,7 +728,7 @@ async function getData(rootOrg,org,ids,isInIntranet=null, isStandAlone=null){
         // console.log(query['query']['bool']['must'])
 
         let dataResult = await esDb.getData(query,esType,esIndex)
-        
+
         if(dataResult.hits.total>0){
             let sourceData = dataResult.hits.hits
             //console.log("sourceData : ",sourceData)
@@ -770,7 +770,7 @@ async function getData(rootOrg,org,ids,isInIntranet=null, isStandAlone=null){
                 //console.log("dataObj : ",dataObj)
                 value.push(dataObj)
                 //console.log("value : ",value)
-                resultObj[data._source.contentType] = value 
+                resultObj[data._source.contentType] = value
                 //console.log("resultObj : ",resultObj)
             }
         }
@@ -802,7 +802,7 @@ async function followers(request) {
             followers_query='SELECT type,sourceid FROM bodhi.follow_by_targetid WHERE root_org= ? and org=? and targetid= ? and status = ? and type = ?'
             params= [request.rootOrg,request.org,request.userid, 'follow',request.type]
         }
-        
+
         let result = await runQuery(followers_query, params)
         let followers_ids_list = []
         //console.log(result)
@@ -815,7 +815,7 @@ async function followers(request) {
                 }
                 value.push(element['sourceid'].toString())
                 followData["person"] = value
-                
+
             });
             let list1= {}
             let list2 = {}
@@ -910,7 +910,7 @@ async function followersv2(request) {
                 }
                 //console.log(list1)
             }
-            if(result.pageState != null){ 
+            if(result.pageState != null){
                 followers_ids_list.push({
                     'pageState': result.pageState
                 })
@@ -989,7 +989,7 @@ async function followersv3(request) {
                 }
                 //console.log(list1)
             }
-            if(result.pageState != null){ 
+            if(result.pageState != null){
                 followers_ids["pageState"] = result.pageState
             }
         }
@@ -1032,7 +1032,7 @@ async function getfollowers(request) {
                 }
                 value.push(element['sourceid'].toString())
                 followData["person"] = value
-                
+
             });
             let list1= {}
             let list2 = {}
@@ -1178,23 +1178,23 @@ async function getuserprofile(rootOrg,id) {
                 const usermeta_ip = process.env.usermeta_ip || properties.get('usermeta_ip')
                 const usermeta_port = process.env.usermeta_port || properties.get('usermeta_port')
                 let userMetaUrl = "http://"+usermeta_ip+":"+usermeta_port+"/user"
-                var options = { 
+                var options = {
                     method: 'POST',
                     url: userMetaUrl,
-                    headers: 
-                    { 
-                        'Content-Type': 'application/json' 
+                    headers:
+                    {
+                        'Content-Type': 'application/json'
                     },
-                    body: 
-                    { 
+                    body:
+                    {
                         source_fields: [ 'wid', 'first_name', 'last_name' ],
-                        conditions: 
-                        { 
+                        conditions:
+                        {
                             root_org: rootOrg,
-                            wid: id 
-                        } 
+                            wid: id
+                        }
                     },
-                    json: true 
+                    json: true
                 };
 
                 return new Promise((resolve,reject) => {
@@ -1216,7 +1216,7 @@ async function getuserprofile(rootOrg,id) {
                     });
                 })
 
-                
+
             }
         }
         else{
@@ -1233,6 +1233,6 @@ async function getuserprofile(rootOrg,id) {
     }
 }
 
-module.exports = { followers, followersv2, followersv3, following, followingv2, followingv3, 
-                    follow, unfollow, getall, getallv2, getallv3, getuserprofile, getPersonData, 
+module.exports = { followers, followersv2, followersv3, following, followingv2, followingv3,
+                    follow, unfollow, getall, getallv2, getallv3, getuserprofile, getPersonData,
                     getfollowers}
