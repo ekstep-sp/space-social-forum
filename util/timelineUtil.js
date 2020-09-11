@@ -32,11 +32,11 @@ function aggegrationsData(aggsMetaData){
                 aggsFilter.type = obj.replace("Aggs","")
                 aggsFilter.displayName = aggsDisplayName[obj]
                 aggsData = aggsMetaData[obj][obj]
-                
+
                 //to handle nested aggs case
                 if(aggsData.hasOwnProperty(obj)){
                     aggsData = aggsData[obj]
-                    
+
                 }
                 aggsData = aggsData["buckets"]
 
@@ -74,7 +74,7 @@ function aggegrationsData(aggsMetaData){
                   aggsFilter.content = contentList
                   aggsDataList.push(aggsFilter)
                 }
-                
+
             }
         }
         return aggsDataList
@@ -109,7 +109,7 @@ function aggegrationsData(aggsMetaData){
             }
         })
     })
-    } 
+    }
     catch (error) {
       //console.log(JSON.stringify(error))
       if(error.statuscode){
@@ -131,13 +131,19 @@ async function fetchActivity(request) {
         "downVote": false,
         "flag": false
       }
-  
+
       let activityCount = {
         "like": 0,
         "upVote": 0,
         "downVote": 0,
         "flag": 0
       }
+      let activityDetails = {
+          "like": [],
+          "upVote": [],
+          "downVote": [],
+          "flag": []
+      };
       let result = new Map();
       let params = {}
       let successIds = []
@@ -145,13 +151,14 @@ async function fetchActivity(request) {
       post_count_query = 'SELECT  post_id,up_vote,down_vote,flag,like,dislike from bodhi.post_count where root_org=? and org=? and post_id in ?'
       let post_count = await cassDb.executeQuery(post_count_query, [request['rootOrg'], request['org'], request['postId']])
       if (post_count.rowLength > 0) {
-        params.sizeValue = request['postId'].length
         params.rootOrgValue = request['rootOrg']
         params.orgValue = request['org']
-        params.mustuserIdstatus =true
+        params.mustuserIdstatus =false
         params.userIdValue = [request['userId']]
         params.mustpostidstatus = true
         params.postidValue = request['postId']
+        let countResult =  await esDb.count(params, "userpostactivityType", "userpostactivityIndex", "userpostactivityTemplate");
+        params.sizeValue = Math.min(countResult['count'], 10000);
         let userActivity = await esDb.templateSearch(params, "userpostactivityType", "userpostactivityIndex", "userpostactivityTemplate")
         post_count.rows.forEach(element => {
           //user activity data
@@ -161,43 +168,48 @@ async function fetchActivity(request) {
             "downVote": false,
             "flag": false
           }
-  
+
           activityCount = {
             "like": Number(element['like'])-Number(element['dislike']),
             "upVote": Number(element['up_vote']),
             "downVote": Number(element['down_vote']),
             "flag": Number(element['flag'])
           }
-  
+
           if (userActivity['hits']['total'] > 0) {
             let userData = userActivity['hits']['hits']
             for (let userDataObj of userData) {
               source = userDataObj['_source']
-              if (source['postid'] == element['post_id'].toString() && source['userId'] == request['userId']) {
-                if ('like' in source) {
-                  userActivityData['like'] = source['like']['isLiked']
-                }
-                if ('upVote' in source) {
-                  userActivityData['upVote'] = source['upVote']['isupVoted']
-                }
-                if ('downVote' in source) {
-                  userActivityData['downVote'] = source['downVote']['isdownVoted']
-                }
-                if ('flag' in source) {
-                  userActivityData['flag'] = source['flag']['isFlagged']
-                }
+              if (source['postid'] == element['post_id'].toString()) {
+                  if ('like' in source && source['like']['isLiked']) {
+                      activityDetails['like'].push(source['userId']);
+                      userActivityData['like'] = userActivityData['like'] || source['userId'] === request['userId'];
+                  }
+                  if ('upVote' in source && source['upVote']['isupVoted']) {
+                      activityDetails['upVote'].push(source['userId']);
+                      userActivityData['upVote'] = userActivityData['upVote'] || source['userId'] === request['userId'];
+                  }
+                  if ('downVote' in source && source['downVote']['isdownVoted']) {
+                      activityDetails['downVote'].push(source['userId']);
+                      userActivityData['downVote'] = userActivityData['downVote'] || source['userId'] === request['userId'];
+                  }
+                  if ('flag' in source && source['flag']['isFlagged']) {
+                      activityDetails['flag'].push(source['userId']);
+                      userActivityData['flag'] = userActivityData['flag'] || source['userId'] === request['userId'];
+                  }
               }
             }
           }
           successIds.push(element['post_id'].toString())
           let postData = {
-            "activityData": activityCount,
-            "userActivity": userActivityData
+              "activityData": activityCount,
+              "userActivity": userActivityData,
+              "activityDetails": activityDetails
           }
           result.set(element['post_id'].toString(),postData)
           //result.push(postData)
-  
-  
+
+
         });
         //console.log(successIds)
         if (successIds.length != request['postId'].length) {
@@ -207,14 +219,14 @@ async function fetchActivity(request) {
             "downVote": false,
             "flag": false
           }
-  
+
           activityCount = {
             "like": 0,
             "upVote": 0,
             "downVote": 0,
             "flag": 0
           }
-  
+
           request['postId'].forEach(element => {
             if (!(successIds.includes(element))) {
               postData = {
@@ -234,14 +246,14 @@ async function fetchActivity(request) {
           "downVote": false,
           "flag": false
         }
-  
+
         activityCount = {
           "like": 0,
           "upVote": 0,
           "downVote": 0,
           "flag": 0
         }
-  
+
         request['postId'].forEach(element => {
           postData = {
             "activityData": activityCount,
@@ -257,7 +269,7 @@ async function fetchActivity(request) {
       throw error.toString()
     }
   }
-  
+
 
 module.exports = {
     aggegrationsData,

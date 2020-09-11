@@ -138,7 +138,7 @@ function createData(queryBody, paramType, paramIndex) {
                     reject(err1)
                 })
             })
-            
+
            // resolve(result)
         }).catch((err) => {
             log.error('error: ' + err);
@@ -312,6 +312,65 @@ function templateSearch(queryBody, paramType, paramIndex, paramsTemplate) {
     })
 }
 
+function count(queryBody, paramType, paramIndex, paramsTemplate) {
+    if (elasticSearchClient == null) {
+        connectClient();
+    }
+    queryBody = parseTemplateQuery(queryBody)
+    paramIndexList = paramIndex.split(',')
+    indexNamesList = []
+    paramIndexList.forEach(element => {
+        indexNamesList.push(indexDict[element])
+    });
+    indexNames = indexNamesList.join(',')
+    console.log(indexNames)
+    return new Promise((resolve, reject) => {
+        elasticSearchClient.count({
+            index: indexNames,
+            type: indexDict[paramType],
+            body: queryBody
+        }).then((result) => {
+            log.info('Results: ' + result);
+            resolve(result)
+        }).catch((err) => {
+            log.error('error: ' + err);
+            reject(result)
+        })
+    })
+}
+
+function parseTemplateQuery(queryBody) {
+    let newQueryBody = {"query": {"bool": {}}};
+    for (let name of Object.keys(queryBody)) {
+        if(name.includes("Value")) {
+            name = name.replace("Value","")
+        } else {
+            continue;
+        }
+        if(newQueryBody["query"]["bool"]["must"] === undefined) {
+            newQueryBody["query"]["bool"]["must"] = []
+        }
+        if (!queryBody.hasOwnProperty("must".concat(name,"status")) || queryBody["must".concat(name,"status")]) {
+            let value = {};
+            let condition = "term";
+            if(Array.isArray(queryBody[name.concat("Value")])) {
+                condition = "terms";
+                value = queryBody[name.concat("Value")];
+            } else {
+                value = {
+                    "value": queryBody[name.concat("Value")]
+                }
+            }
+            newQueryBody["query"]["bool"]["must"].push({
+                [condition]: {
+                    [name]: value
+                }
+            });
+        }
+    }
+    return newQueryBody;
+}
+
 
 module.exports = {
     getData,
@@ -320,5 +379,6 @@ module.exports = {
     deleteData,
     updateDataByQuery,
     templateSearch,
+    count,
     bulkData
 };
