@@ -1028,7 +1028,7 @@ async function timelinev2(request,pgNo,pgSize){
     estype = "threadType"
     esindex = "threadIndex"
     estemplate = "threadTimelineTemplate_v1"
-
+    userId = request.userId
     accessPaths =await timelineUtilServices.getAccessPaths(request.userId,request.rootOrg)
     // if accessPath is provided as a filter, checking if the user is having access to those access paths
     if(request.hasOwnProperty("filters")== true && request.filters.hasOwnProperty("accessPaths")==true){
@@ -1199,10 +1199,11 @@ async function timelinev2(request,pgNo,pgSize){
       }
 
       //getting the aggs/filters
-      let aggsResultHits = timelineResult['aggregations']['TotalAggs']
-      //console.log(aggsResultHits)
-      aggsFilters = timelineUtilServices.aggegrationsData(aggsResultHits)
-
+      if (idsList.length > 0 && request['type'] != 'myDrafts') {
+        let aggsResultHits = timelineResult['aggregations']['TotalAggs']
+        // console.log(aggsResultHits)
+        aggsFilters = timelineUtilServices.aggegrationsData(aggsResultHits)
+      }
       //activity data
       if(idsList.length>0 && request['type']!='myDrafts'){
         let activityObject = {
@@ -1239,7 +1240,6 @@ async function timelinev2(request,pgNo,pgSize){
       "newDataCount" : newDocCount,
       "filters" : aggsFilters
     }
-
     return result
 
   } catch (error) {
