@@ -46,7 +46,7 @@ async function fetchCatalog(request){
             let sourceId = startNode.identity.low
             let destinationId = endNode.identity.low
 
-            
+
             let startNodeMeta = {}
             //let endNodeMeta = {}
             if(dimensions.includes(dimensionName)){
@@ -66,7 +66,7 @@ async function fetchCatalog(request){
                     "child":[]
                 }
             }
-            
+
 
 
             let endNodeMeta = {
@@ -101,8 +101,8 @@ async function fetchCatalog(request){
                     let children = parentMap.child
                     //console.log("children** :",children)
                     //console.log("parentMap",parentMap)
-                    let child = {}         
-                      
+                    let child = {}
+
                     child = idToNodeMapping[destinationId]
                     path = parentMap.path +">" +idToNodeMapping[destinationId].name
                     child.path = path
@@ -112,7 +112,7 @@ async function fetchCatalog(request){
                     children.push(child)
                     //console.log("children :",children)
                     parentMap.child = children
-                    
+
                 }
                 else{
                     immediateParentId = relationToLexIdMap[relationObject.identity.low]
@@ -123,7 +123,7 @@ async function fetchCatalog(request){
         //console.log(hierarchyMap)
         return hierarchyMap
 
-        
+
     } catch (error) {
         if (error.statuscode) {
             throw error
@@ -131,9 +131,6 @@ async function fetchCatalog(request){
         else {
             throw { statuscode: 500, err: "internal server error", message: "unexpected error" }
         }
-    }
-    finally{
-        neoUtil.closeNeo()
     }
 }
 
@@ -156,7 +153,7 @@ async function getCatalog(request){
         }
         //dimensions.push(config.commonCatalogName)
         //console.log("dimensions:", dimensions)
-        
+
         //console.log(dimensions)
         dimensions.forEach(element => {
             if(data.hasOwnProperty(element)==true){
