@@ -31,7 +31,7 @@ function runQuery(query,params) {
             resolve(result)
         }).catch((err) => {
             //log.error('error: ' + err);
-            reject(result)
+            reject(err)
         })
     })
 }
