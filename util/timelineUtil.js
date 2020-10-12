@@ -162,81 +162,96 @@ async function fetchActivity(request) {
         let userActivity = await esDb.templateSearch(params, "userpostactivityType", "userpostactivityIndex", "userpostactivityTemplate")
         post_count.rows.forEach(element => {
           //user activity data
-          userActivityData = {
-            "like": false,
-            "upVote": false,
-            "downVote": false,
-            "flag": false
-          }
+            userActivityData = {
+                "like": false,
+                "upVote": false,
+                "downVote": false,
+                "flag": false
+            };
 
-          activityCount = {
-            "like": Number(element['like'])-Number(element['dislike']),
-            "upVote": Number(element['up_vote']),
-            "downVote": Number(element['down_vote']),
-            "flag": Number(element['flag'])
-          }
+            activityDetails = {
+                "like": [],
+                "upVote": [],
+                "downVote": [],
+                "flag": []
+            };
 
-          if (userActivity['hits']['total'] > 0) {
-            let userData = userActivity['hits']['hits']
-            for (let userDataObj of userData) {
-              source = userDataObj['_source']
-              if (source['postid'] == element['post_id'].toString()) {
-                  if ('like' in source && source['like']['isLiked']) {
-                      activityDetails['like'].push(source['userId']);
-                      userActivityData['like'] = userActivityData['like'] || source['userId'] === request['userId'];
-                  }
-                  if ('upVote' in source && source['upVote']['isupVoted']) {
-                      activityDetails['upVote'].push(source['userId']);
-                      userActivityData['upVote'] = userActivityData['upVote'] || source['userId'] === request['userId'];
-                  }
-                  if ('downVote' in source && source['downVote']['isdownVoted']) {
-                      activityDetails['downVote'].push(source['userId']);
-                      userActivityData['downVote'] = userActivityData['downVote'] || source['userId'] === request['userId'];
-                  }
-                  if ('flag' in source && source['flag']['isFlagged']) {
-                      activityDetails['flag'].push(source['userId']);
-                      userActivityData['flag'] = userActivityData['flag'] || source['userId'] === request['userId'];
-                  }
-              }
+            activityCount = {
+                "like": Number(element['like']) - Number(element['dislike']),
+                "upVote": Number(element['up_vote']),
+                "downVote": Number(element['down_vote']),
+                "flag": Number(element['flag'])
             }
-          }
-          successIds.push(element['post_id'].toString())
-          let postData = {
-              "activityData": activityCount,
-              "userActivity": userActivityData,
-              "activityDetails": activityDetails
-          }
-          result.set(element['post_id'].toString(),postData)
-          //result.push(postData)
+
+            if (userActivity['hits']['total'] > 0) {
+                let userData = userActivity['hits']['hits']
+                for (let userDataObj of userData) {
+                    let source = userDataObj['_source']
+                    if (source['postid'] === element['post_id'].toString()) {
+                        if ('like' in source && source['like']['isLiked']) {
+                            activityDetails['like'].push(source['userId']);
+                            userActivityData['like'] = userActivityData['like'] || source['userId'] === request['userId'];
+                        }
+                        if ('upVote' in source && source['upVote']['isupVoted']) {
+                            activityDetails['upVote'].push(source['userId']);
+                            userActivityData['upVote'] = userActivityData['upVote'] || source['userId'] === request['userId'];
+                        }
+                        if ('downVote' in source && source['downVote']['isdownVoted']) {
+                            activityDetails['downVote'].push(source['userId']);
+                            userActivityData['downVote'] = userActivityData['downVote'] || source['userId'] === request['userId'];
+                        }
+                        if ('flag' in source && source['flag']['isFlagged']) {
+                            activityDetails['flag'].push(source['userId']);
+                            userActivityData['flag'] = userActivityData['flag'] || source['userId'] === request['userId'];
+                        }
+                    }
+                }
+            }
+            successIds.push(element['post_id'].toString())
+            let postData = {
+                "activityData": activityCount,
+                "userActivity": userActivityData,
+                "activityDetails": activityDetails
+            }
+            result.set(element['post_id'].toString(), postData)
+            //result.push(postData)
 
 
         });
         //console.log(successIds)
         if (successIds.length != request['postId'].length) {
-          userActivityData = {
-            "like": false,
-            "upVote": false,
-            "downVote": false,
-            "flag": false
-          }
-
-          activityCount = {
-            "like": 0,
-            "upVote": 0,
-            "downVote": 0,
-            "flag": 0
-          }
-
-          request['postId'].forEach(element => {
-            if (!(successIds.includes(element))) {
-              postData = {
-                "activityData": activityCount,
-                "userActivity": userActivityData
-              }
-              result.set(element,postData)
-              //result.push(postData)
+            userActivityData = {
+                "like": false,
+                "upVote": false,
+                "downVote": false,
+                "flag": false
             }
-          });
+
+            activityCount = {
+                "like": 0,
+                "upVote": 0,
+                "downVote": 0,
+                "flag": 0
+            }
+
+            activityDetails = {
+                "like": [],
+                "upVote": [],
+                "downVote": [],
+                "flag": []
+            };
+
+            request['postId'].forEach(element => {
+                if (!(successIds.includes(element))) {
+                    postData = {
+                        "activityData": activityCount,
+                        "userActivity": userActivityData,
+                        "activityDetails": activityDetails
+                    }
+                    result.set(element, postData)
+                    //result.push(postData)
+                }
+            });
         }
       }
       else{
@@ -254,10 +269,18 @@ async function fetchActivity(request) {
           "flag": 0
         }
 
+        activityDetails = {
+            "like": [],
+            "upVote": [],
+            "downVote": [],
+            "flag": []
+        };
+
         request['postId'].forEach(element => {
           postData = {
             "activityData": activityCount,
-            "userActivity": userActivityData
+            "userActivity": userActivityData,
+            "activityDetails": activityDetails
           }
           result.set(element,postData)
         });
