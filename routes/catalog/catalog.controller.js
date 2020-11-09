@@ -29,7 +29,7 @@ async function fetchCatalog(request){
         let records = []
         //const session = neoUtil.connectToNeo();
         //let query = 'MATCH(start:WingspanDimension)-[rel:IS_PARENT_OF*1..10]->(end:TaxonomyNode) WHERE start.name IN $dimension  RETURN start,rel,end'
-        let query = 'MATCH(r:RootOrg)-[:IS_PARENT_OF]->(start:WingspanDimension)-[rel:IS_PARENT_OF*1..10]->(end:TaxonomyNode) WHERE start.name IN $dimension and r.name=$rootOrg RETURN start,rel,end'
+        let query = 'MATCH(r:RootOrg)-[:IS_PARENT_OF]->(start:WingspanDimension)-[rel:IS_PARENT_OF*1..10]->(end:TaxonomyNode) WHERE start.name IN $dimension and r.name=$rootOrg RETURN start,rel,end ORDER BY end.nodeId'
         params = {dimension : dimensions,rootOrg:request.rootOrg}
         let fetchData = await neoUtil.runQuery(query,params)
         records = fetchData.records
